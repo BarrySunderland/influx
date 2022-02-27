@@ -9,15 +9,23 @@ to run
 (note that the go app sleeps for .1s between each write)
 1. use the influxDB UI to view the data at http://localhost:8086
 
-# Connection
-Connection and test tutorial: 
+**Output** 
+```
+created new bucket:  thermostat
+writing record 100 of 100: done. view in UI at http://localhost:8086
+```
+
+![influxDB Data explorer example](./influxDB_data_explorer.png)
+
+
+## Sources
+Code for Connection and testing from: 
 https://www.influxdata.com/blog/getting-started-go-influxdb/
+https://github.com/influxdata/influxdb-client-go  
 
-https://github.com/influxdata/influxdb-client-go
+This repo does not enable TLS. TLS is necessary in production: https://docs.influxdata.com/influxdb/v2.1/security/enable-tls/   
 
-enable TLS in production: https://docs.influxdata.com/influxdb/v2.1/security/enable-tls/   
-
-
+# Info on InfluxDB
 
 ## Records Format  
 A record in InfluxDB is composed of three elements: measurementName, fields and tags. The key concepts of InfluxDB include:
@@ -80,8 +88,4 @@ func write_event_with_fluent_Style(client influxdb2.Client, t ThermostatSetting)
 }
 ```
 
-You can force the client to send the data using Flush(). You’ve seen this in the previous example.
-
-writeAPI.Flush()
-
-However, based on my experience with time-series databases, don’t use the Flush methods everywhere. Even if it seems reasonable to write the data instantly to the database, it can significantly affect performance. Instead, use the Batch Size option.
+Don’t use the Flush methods everywhere. Even if it seems reasonable to write the data instantly to the database, it can significantly affect performance. Instead, use the Batch Size option.
