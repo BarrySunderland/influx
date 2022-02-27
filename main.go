@@ -2,35 +2,39 @@ package main
 
 import (
 	"context"
-	"errors"
+	"fmt"
+	"math"
 	"os"
+	"time"
 
-	influxdb2 "github.com/influxdata/influxdb-client-go/v2"
+	"github.com/barrysunderland/influx/drivers"
 )
 
-// Connect to an Influx Database reading the credentials from
-// environment variables INFLUXDB_TOKEN, INFLUXDB_URL
-// return influxdb Client or errors
-func ConnectToInfluxDB() (influxdb2.Client, error) {
-
-	dbToken := os.Getenv("INFLUXDB_TOKEN")
-	if dbToken == "" {
-		return nil, errors.New("INFLUXDB_TOKEN must be set")
-	}
-
-	dbURL := os.Getenv("INFLUXDB_URL")
-	if dbURL == "" {
-		return nil, errors.New("INFLUXDB_URL must be set")
-	}
-
-	client := influxdb2.NewClient(dbURL, dbToken)
-
-	// validate client connection health
-	_, err := client.Health(context.Background())
-
-	return client, err
-}
-
 func main() {
+
+	client, err := drivers.ConnectToInfluxDB()
+	if err != nil {
+		fmt.Println("err")
+		os.Exit(1)
+	}
+
+	drivers.CreateBucketIfNotExists(context.Background(), client)
+
+	var newT drivers.ThermostatSetting
+	numSteps := 100.0
+	for i := 0.0; i < numSteps; i++ {
+		max := 30.4 * math.Sin(i/10.0)
+		newT = drivers.ThermostatSetting{
+			User: "tempCorp",
+			Max:  max,
+			Avg:  28.1,
+		}
+		drivers.Write_event_with_params_constror(client, newT)
+
+		fmt.Printf("\rwriting record %v of %v", i+1, numSteps)
+		time.Sleep(time.Second / 10)
+
+	}
+	fmt.Println(": done. view in UI at http://localhost:8086")
 
 }
